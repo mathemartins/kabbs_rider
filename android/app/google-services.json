@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "149772945905",
+    "firebase_url": "https://kabbsuniversal-6efda-default-rtdb.firebaseio.com",
+    "project_id": "kabbsuniversal-6efda",
+    "storage_bucket": "kabbsuniversal-6efda.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:149772945905:android:4b42100a823c078963dc50",
+        "android_client_info": {
+          "package_name": "com.kabbsuniversal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "149772945905-77qlt4k2ndr01feo2u8a3e9ihune24ri.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIcPmerMRhKJuth4AHmcwfTfrxo_s2M_k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "149772945905-77qlt4k2ndr01feo2u8a3e9ihune24ri.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:149772945905:android:7bed7237e2c477c663dc50",
+        "android_client_info": {
+          "package_name": "com.kabbsuniversalrider"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "149772945905-77qlt4k2ndr01feo2u8a3e9ihune24ri.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIcPmerMRhKJuth4AHmcwfTfrxo_s2M_k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "149772945905-77qlt4k2ndr01feo2u8a3e9ihune24ri.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

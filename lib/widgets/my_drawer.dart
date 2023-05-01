@@ -1,0 +1,80 @@
+import 'package:flutter/material.dart';
+import 'package:kabbs_universal_rider/global/global.dart';
+import 'package:kabbs_universal_rider/splashScreen/splash_screen.dart';
+
+// ignore: must_be_immutable
+class MyDrawer extends StatefulWidget {
+  String? name;
+  String? email;
+
+  MyDrawer({this.name, this.email});
+
+  @override
+  _MyDrawerState createState() => _MyDrawerState();
+}
+
+class _MyDrawerState extends State<MyDrawer> {
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        children: [
+          // Drawer Header
+          Container(
+            height: 165,
+            color: Colors.grey,
+            child: DrawerHeader(
+              decoration: BoxDecoration(color: Colors.black54),
+              child: Row(
+                children: [
+                  Icon(Icons.person, size: 40, color: Colors.grey),
+                  SizedBox(width: 16,),
+                  Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Text(widget.name.toString(), style: TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.bold),),
+                    Text(widget.email.toString(), style: TextStyle(fontSize: 12, color: Colors.grey),)
+                  ],)
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 10,),
+
+          GestureDetector(
+            onTap: (){},
+            child: ListTile(
+              leading: Icon(Icons.history, color: Colors.grey,),
+              title: Text("History", style: TextStyle(color: Colors.grey),),
+            ),
+          ),
+
+          GestureDetector(
+            onTap: (){},
+            child: ListTile(
+              leading: Icon(Icons.person, color: Colors.grey,),
+              title: Text("Profile", style: TextStyle(color: Colors.grey),),
+            ),
+          ),
+
+          GestureDetector(
+            onTap: (){},
+            child: ListTile(
+              leading: Icon(Icons.account_balance_outlined, color: Colors.grey,),
+              title: Text("About", style: TextStyle(color: Colors.grey),),
+            ),
+          ),
+
+          GestureDetector(
+            onTap: (){
+              firebaseAuth.signOut();
+              Navigator.push(context, MaterialPageRoute(builder: (context) => MySplashScreen()));
+            },
+            child: ListTile(
+              leading: Icon(Icons.logout, color: Colors.grey,),
+              title: Text("Sign Out", style: TextStyle(color: Colors.grey),),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}

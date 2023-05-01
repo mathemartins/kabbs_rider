@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>149772945905-gquffugjiebeo1ph2hii8jgo1k018pfd.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.149772945905-gquffugjiebeo1ph2hii8jgo1k018pfd</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCM1PlWr9hSduXmdVS2vukIDL7Ud1i2sgQ</string>
+	<key>GCM_SENDER_ID</key>
+	<string>149772945905</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.kabbsUniversalRider</string>
+	<key>PROJECT_ID</key>
+	<string>kabbsuniversal-6efda</string>
+	<key>STORAGE_BUCKET</key>
+	<string>kabbsuniversal-6efda.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:149772945905:ios:86402ac9100b201463dc50</string>
+	<key>DATABASE_URL</key>
+	<string>https://kabbsuniversal-6efda-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>
