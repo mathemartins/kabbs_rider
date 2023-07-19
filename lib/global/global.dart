@@ -7,3 +7,6 @@ User? currentFirebaseUser;
 UserModel? userModelCurrentInfo;
 List dList = []; //online-active drivers Information List
 DirectionDetailsInfo? tripDirectionDetailsInfo;
+String? chosenDriverId = "";
+String cloudMessagingServerToken = "key=AAAAIt8pyfE:APA91bFfOMICoxix42xt1DCSs8t817oFUXc4XNbWe6U5IJ0QVtKPM2qj8X7a0t9crS7kGG9qUPl3T2aVaGykX0LSabxcQwbArqN15p6EBK4LSsL4qizQJXMPBlvieetrEYM-JU8hSlWg";
+String userDropOffAddress = "";

@@ -6,8 +6,9 @@ import 'package:kabbs_universal_rider/assistants/assistant_methods.dart';
 import 'package:kabbs_universal_rider/global/global.dart';
 import 'package:smooth_star_rating_null_safety/smooth_star_rating_null_safety.dart';
 
+// ignore: must_be_immutable
 class SelectNearestActiveDriverScreen extends StatefulWidget {
-  DatabaseReference referenceRideRequest;
+  DatabaseReference? referenceRideRequest;
 
   SelectNearestActiveDriverScreen({required this.referenceRideRequest});
   @override
@@ -42,7 +43,7 @@ class _SelectNearestActiveDriverScreenState extends State<SelectNearestActiveDri
         leading: IconButton(
           icon: Icon(Icons.close, color: Colors.white),
           onPressed: () {
-            widget.referenceRideRequest.remove();
+            widget.referenceRideRequest?.remove();
             Fluttertoast.showToast(msg: "You have cancelled your ride!");
             SystemNavigator.pop();
           },
@@ -51,50 +52,58 @@ class _SelectNearestActiveDriverScreenState extends State<SelectNearestActiveDri
       body: ListView.builder(
         itemCount: dList.length,
         itemBuilder: (BuildContext context, int index){
-          return Card(
-            color: Colors.grey,
-            elevation: 3,
-            shadowColor: Colors.black,
-            margin: EdgeInsets.all(8),
-            child: ListTile(
-                leading: Padding(
-                  padding: const EdgeInsets.only(top: 2.0),
-                  child: Image.asset("images/" + dList[index]["car_details"]["type"].toString() + ".png", width: 40,),
+          return GestureDetector(
+            onTap: (){
+              setState(() {
+                chosenDriverId = dList[index]["id"].toString();
+                Navigator.pop(context, "driverChose");
+              });
+            },
+            child: Card(
+              color: Colors.grey,
+              elevation: 3,
+              shadowColor: Colors.black,
+              margin: EdgeInsets.all(8),
+              child: ListTile(
+                  leading: Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Image.asset("images/" + dList[index]["car_details"]["type"].toString() + ".png", width: 40, height: 40,),
+                  ),
+                title: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(dList[index]["name"], style: TextStyle(fontSize: 12, color: Colors.black)),
+                    Text(dList[index]["car_details"]["car_model"], style: TextStyle(fontSize: 12, color: Colors.black)),
+                    SmoothStarRating(
+                        allowHalfRating: false,
+                        starCount: 5,
+                        rating: 3.5,
+                        size: 13.0,
+                        color: Colors.black,
+                        borderColor: Colors.black,
+                        spacing:0.0
+                    )
+                  ],
                 ),
-              title: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(dList[index]["name"], style: TextStyle(fontSize: 12, color: Colors.black)),
-                  Text(dList[index]["car_details"]["car_model"], style: TextStyle(fontSize: 12, color: Colors.black)),
-                  SmoothStarRating(
-                      allowHalfRating: false,
-                      starCount: 5,
-                      rating: 3.5,
-                      size: 13.0,
-                      color: Colors.black,
-                      borderColor: Colors.black,
-                      spacing:0.0
-                  )
-                ],
-              ),
-              trailing: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "\₦ " + getFareAmountAccordingToVehicleType(index),
-                    style: TextStyle(fontWeight: FontWeight.bold)
-                  ),
-                  SizedBox(height: 1.0),
-                  Text(
-                      tripDirectionDetailsInfo != null ? tripDirectionDetailsInfo!.duration_text! : "",
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)
-                  ),
-                  SizedBox(height: 1.0),
-                  Text(
-                      tripDirectionDetailsInfo != null ? tripDirectionDetailsInfo!.distance_text! : "",
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)
-                  ),
-                ],
+                trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "\₦ " + getFareAmountAccordingToVehicleType(index),
+                      style: TextStyle(fontWeight: FontWeight.bold)
+                    ),
+                    SizedBox(height: 1.0),
+                    Text(
+                        tripDirectionDetailsInfo != null ? tripDirectionDetailsInfo!.duration_text! : "",
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)
+                    ),
+                    SizedBox(height: 1.0),
+                    Text(
+                        tripDirectionDetailsInfo != null ? tripDirectionDetailsInfo!.distance_text! : "",
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)
+                    ),
+                  ],
+                ),
               ),
             ),
           );

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
@@ -10,6 +12,7 @@ import 'package:kabbs_universal_rider/models/direction_details_info.dart';
 import 'package:kabbs_universal_rider/models/directions.dart';
 import 'package:kabbs_universal_rider/models/user_model.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 
 class AssistantMethods {
 
@@ -72,5 +75,36 @@ class AssistantMethods {
     double totalFareAmount = timeTravalledFareAmountPerMinute + distanceTravelledFareAmountPerKilometer + baseFare;
 
     return double.parse(totalFareAmount.toStringAsExponential(1));
+  }
+
+  static void sendNotificationToDriverNow(String deviceRegistrationToken, String userRideRequestId, context) async {
+    String destinationAddress = userDropOffAddress;
+    Map<String, String> headerNotification= {
+      'Content-Type': 'application/json',
+      'Authorization': cloudMessagingServerToken,
+    };
+
+    Map<String, String> bodyNotification={
+      "body": "Destination: \n $destinationAddress",
+      "title": "Hey!, You have a new ride request",
+    };
+
+    Map dataMap = {
+      "click_action": "FLUTTER_NOTIFICATION_CLICK",
+      "id": 1,
+      "status": "done",
+      "rideRequestId": userRideRequestId!
+    };
+
+    Map officialFormat = {
+      "notification": bodyNotification,
+      "data": dataMap,
+      "priority": "high",
+      "to": deviceRegistrationToken
+    };
+
+    var responseNotification = http.post(
+      Uri.parse("https://fcm.googleapis.com/fcm/send"), headers: headerNotification, body: jsonEncode(officialFormat),
+    );
   }
 }

@@ -13,7 +13,7 @@ class _SearchPlacesScreenState extends State<SearchPlacesScreen> {
   List<PredictedPlaces> placesPredictedList = [];
   void findPlaceAutoCompleteSearch(String inputText) async {
     if(inputText.length > 1) {
-      String urlAutoCompleteSearch = "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$inputText&key=$mapKey&components=country:US";
+      String urlAutoCompleteSearch = "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$inputText&key=$mapKey&components=country:NG";
       var responseAutoCompleteSearch = await RequestAssistant.receiveRequest(urlAutoCompleteSearch);
       if(responseAutoCompleteSearch == "Error Occurred, Failed. No Response.") {
         return;

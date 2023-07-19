@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -30,14 +30,16 @@ class _MainScreenState extends State<MainScreen> {
   GoogleMapController? newGoogleMapController;
 
   static final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
+    target: LatLng(6.508528, 3.374420), // Yaba Lagos Nigeria
+    zoom: 16.4746,
   );
 
   GlobalKey<ScaffoldState> sKey = GlobalKey<ScaffoldState>();
   double searchLocationContainerHeight = 220;
+  double waitingResponseFromDriverContainerHeight = 0;
+  double assignedDriverInfoContainerHeight = 0;
 
-  late Position userCurrentPosition;
+  Position? userCurrentPosition;
   var geoLocator = Geolocator();
 
   late LocationPermission _locationPermission;
@@ -58,7 +60,9 @@ class _MainScreenState extends State<MainScreen> {
   BitmapDescriptor? activeNearbyIcon;
 
   List<ActiveNearbyAvailableDrivers> onlineNearbyAvailableDriversList = [];
-  late DatabaseReference referenceRideRequest;
+  DatabaseReference? referenceRideRequest;
+  String driverRideStatus = "Driver is coming";
+
 
   checkIfLocationPermissionAllowed() async {
     _locationPermission = await Geolocator.requestPermission();
@@ -71,11 +75,11 @@ class _MainScreenState extends State<MainScreen> {
     Position cPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     userCurrentPosition = cPosition;
 
-    LatLng latLngPosition = LatLng(userCurrentPosition.latitude, userCurrentPosition.longitude);
-    CameraPosition cameraPosition = CameraPosition(target: latLngPosition, zoom: 14);
+    LatLng latLngPosition = LatLng(userCurrentPosition!.latitude, userCurrentPosition!.longitude);
+    CameraPosition cameraPosition = CameraPosition(target: latLngPosition, zoom: 16.4746);
     newGoogleMapController!.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
 
-    String humanReadableAddress = await AssistantMethods.searchAddressForGeographicCoOrdinates(userCurrentPosition, context);
+    String humanReadableAddress = await AssistantMethods.searchAddressForGeographicCoOrdinates(userCurrentPosition!, context);
     print(humanReadableAddress);
 
     userName = userModelCurrentInfo!.name!;
@@ -92,7 +96,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void saveRideRequestInformation(){
-    print(userModelCurrentInfo);
     referenceRideRequest = FirebaseDatabase.instance.reference().child("All Ride Requests").push();
     var originLocation = Provider.of<AppInfo>(context, listen: false).userPickLocation;
     var destinationLocation = Provider.of<AppInfo>(context, listen: false).userDropOffLocation;
@@ -113,7 +116,7 @@ class _MainScreenState extends State<MainScreen> {
     Map userInformationMap = {
       "origin": originLocationMap,
       "destination": destinationLocationMap,
-      "time": DateTime.now(),
+      "time": DateTime.now().microsecondsSinceEpoch,
       "username": userModelCurrentInfo!.name,
       "phone": userModelCurrentInfo!.phone,
       "originAddress": originLocation.locationName,
@@ -121,7 +124,7 @@ class _MainScreenState extends State<MainScreen> {
       "driver": "waiting",
     };
 
-    referenceRideRequest.set(userInformationMap);
+    referenceRideRequest?.set(userInformationMap);
 
     onlineNearbyAvailableDriversList = GeofireAssistant.activeNearbyAvailableDriversList;
     searchNearestOnlineDrivers();
@@ -129,7 +132,7 @@ class _MainScreenState extends State<MainScreen> {
 
   void searchNearestOnlineDrivers() async {
     if (onlineNearbyAvailableDriversList.length == 0) {
-      referenceRideRequest.remove();
+      referenceRideRequest?.remove();
 
       setState(() {
         polyLineSet.clear();
@@ -138,14 +141,79 @@ class _MainScreenState extends State<MainScreen> {
         pLineCoOrdinatesList.clear();
       });
 
-      Fluttertoast.showToast(msg: "No active driver in your locale!, Search again after sometime, restarting app now!");
+      Fluttertoast.showToast(msg: "No active driver!, Try again after sometime, restarting");
       Future.delayed(Duration(milliseconds: 4000), (){
         SystemNavigator.pop();
       });
       return;
     }
     await retrieveOnlineDriversInformation(onlineNearbyAvailableDriversList);
-    Navigator.push(context, MaterialPageRoute(builder: (context) => SelectNearestActiveDriverScreen(referenceRideRequest: referenceRideRequest)));
+    var response = await Navigator.push(context, MaterialPageRoute(builder: (context) => SelectNearestActiveDriverScreen(referenceRideRequest: referenceRideRequest)));
+
+    // ignore: unrelated_type_equality_checks
+    if (response == "driverChose") {
+      FirebaseDatabase.instance.ref().child("drivers").child(chosenDriverId!).once().then((snap) {
+        if (snap.snapshot.value != null) {
+          // Send push notification to driver
+          sendNotificationToDriverNow(chosenDriverId!);
+
+          //Display waiting response UI to user
+          showWaitingResponseFromDriverUI();
+
+          // Receive notification from driver ( Ride cancelled )
+          FirebaseDatabase.instance.ref().child("drivers").child(chosenDriverId!).child("newRideStatus")
+              .onValue.listen((eventSnapshot) {
+                if (eventSnapshot.snapshot.value == "idle") {
+                  Fluttertoast.showToast(msg: "The driver has cancelled your request, Please choose another driver");
+                  Future.delayed(const Duration(milliseconds: 3000), () {
+                    Fluttertoast.showToast(msg: "Please restart app now!");
+                    SystemNavigator.pop();
+                  });
+                }
+
+
+                if (eventSnapshot.snapshot.value == "accepted") {
+                  showUIForAssignedDriverInfo();
+                }  
+          });
+        } else {
+          Fluttertoast.showToast(msg: "Driver went offline!, choose again!");
+        }
+      });
+    }  
+  }
+
+  showUIForAssignedDriverInfo(){
+    setState(() {
+      waitingResponseFromDriverContainerHeight = 0;
+      searchLocationContainerHeight = 0;
+      assignedDriverInfoContainerHeight = 230;
+    });
+  }
+
+  void showWaitingResponseFromDriverUI() {
+    setState(() {
+      searchLocationContainerHeight = 0;
+      waitingResponseFromDriverContainerHeight = 220;
+    });
+  }
+
+  sendNotificationToDriverNow(String chosenDriverId){
+    // Assign rideRequest to newRideStatus on the drivers parent node for that specific driver
+    FirebaseDatabase.instance.ref().child("drivers").child(chosenDriverId).child("newRideStatus").set(referenceRideRequest?.key);
+
+    // Automate the push notification to the system
+    FirebaseDatabase.instance.ref().child("drivers").child(chosenDriverId).child("token").once().then((snap) {
+      if (snap.snapshot.value != null) {
+        String deviceRegistrationToken = snap.snapshot.value.toString();
+        // Send Notification
+        AssistantMethods.sendNotificationToDriverNow(deviceRegistrationToken, referenceRideRequest!.key!.toString(), context);
+        Fluttertoast.showToast(msg: "Notification sent successfully!");
+      } else {
+        Fluttertoast.showToast(msg: "Cannot access this driver, getting you another!");
+        return;
+      }
+    });
   }
 
   retrieveOnlineDriversInformation(List onlineNearestDriversList) async {
@@ -344,7 +412,7 @@ class _MainScreenState extends State<MainScreen> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                            primary: Colors.green,
+                            primary: Colors.lightBlue,
                             textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
                         ),
                       ),
@@ -355,6 +423,116 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
           ),
+
+          //ui for waiting for response from driver
+          Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height:waitingResponseFromDriverContainerHeight,
+                decoration: const BoxDecoration(
+                  color: Colors.black87,
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(20),
+                    topLeft: Radius.circular(20),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Center(
+                    child: AnimatedTextKit(
+                      animatedTexts: [
+                        FadeAnimatedText(
+                            "Waiting for response\nfrom driver...",
+                            duration: const Duration(seconds: 6),
+                            textAlign: TextAlign.center,
+                            textStyle: const TextStyle(
+                                fontSize: 32, color: Colors.white, fontWeight: FontWeight.bold
+                            )
+                        ),
+                        ScaleAnimatedText(
+                            "Please wait..",
+                            duration: const Duration(seconds: 10),
+                            textAlign: TextAlign.center,
+                            textStyle: const TextStyle(
+                                fontSize: 32, color: Colors.white, fontWeight: FontWeight.bold
+                            )
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+          ),
+
+          //ui for displaying assigned driver information
+          Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: assignedDriverInfoContainerHeight,
+                decoration: const BoxDecoration(
+                  color: Colors.black87,
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(20),
+                    topLeft: Radius.circular(20),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Ride status
+                      Center(
+                        child: Text(driverRideStatus, style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white54,
+                        )),
+                      ),
+                      const SizedBox(height:16),
+                      const Divider(height:1, thickness: 1, color: Colors.white),
+                      const SizedBox(height:16),
+
+                      // Vehicle details
+                      Text(
+                          "Vehicle: Tesla Model S",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 14, color: Colors.white54,
+                          )
+                      ),
+
+                      const SizedBox(height:2),
+
+                      // Vehicle details
+                      Text("Driver: John Rakson", textAlign: TextAlign.center, style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white54,
+                      )),
+
+                      const SizedBox(height:2),
+
+                      const Divider(height:1, thickness: 1, color: Colors.white),
+
+                      // Call Driver
+                      Center(
+                        child: ElevatedButton.icon(
+                            onPressed: (){},
+                            style: ElevatedButton.styleFrom(primary: Colors.blueAccent),
+                            icon: const Icon(
+                              Icons.phone,
+                              color: Colors.white,
+                              size: 16
+                            ),
+                            label: Text("Call Driver", style: const TextStyle(color: Colors.black38, fontWeight: FontWeight.bold)),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              )
+          )
 
         ],
       ),
@@ -460,7 +638,7 @@ class _MainScreenState extends State<MainScreen> {
 
     Circle originCircle = Circle(
       circleId: CircleId("originID"),
-      fillColor: Colors.green,
+      fillColor: Colors.lightBlue,
       radius: 12,
       strokeWidth: 3,
       strokeColor: Colors.white,
@@ -485,7 +663,7 @@ class _MainScreenState extends State<MainScreen> {
   initializeGeofireListener() {
     Geofire.initialize("activeDrivers");
     Geofire.queryAtLocation(
-        userCurrentPosition.latitude, userCurrentPosition.longitude, 15)!.listen((map) {
+        userCurrentPosition!.latitude, userCurrentPosition!.longitude, 15)!.listen((map) {
           if (map != null) {
             var callBack = map['callBack'];
 
@@ -559,5 +737,6 @@ class _MainScreenState extends State<MainScreen> {
       });
     }  
   }
+
 }
 

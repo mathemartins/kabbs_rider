@@ -40,6 +40,7 @@ dependencies:
   flutter_geofire: 2.0.1
   smooth_star_rating_null_safety: ^1.0.4+2
   firebase_messaging: ^14.4.1
+  animated_text_kit: ^4.2.1
 
 dev_dependencies:
   flutter_test:
