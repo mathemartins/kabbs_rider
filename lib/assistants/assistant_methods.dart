@@ -10,6 +10,7 @@ import 'package:kabbs_universal_rider/global/map_key.dart';
 import 'package:kabbs_universal_rider/infoHandler/app_info.dart';
 import 'package:kabbs_universal_rider/models/direction_details_info.dart';
 import 'package:kabbs_universal_rider/models/directions.dart';
+import 'package:kabbs_universal_rider/models/trip_history_model.dart';
 import 'package:kabbs_universal_rider/models/user_model.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
@@ -106,5 +107,41 @@ class AssistantMethods {
     var responseNotification = http.post(
       Uri.parse("https://fcm.googleapis.com/fcm/send"), headers: headerNotification, body: jsonEncode(officialFormat),
     );
+  }
+
+  // retrieve trip keys for active user
+  // trip key = rideRequestId
+  static void readTripKeysForOnlineUser(context){
+    FirebaseDatabase.instance.ref().child("All Ride Requests").orderByChild("username").equalTo(userModelCurrentInfo!.name).once().then((snap) {
+      if (snap.snapshot.value != null) {
+        Map keysTripsId = snap.snapshot.value as Map;
+
+        // Count total trips and share it with the provider
+        int overallTripCounter = keysTripsId.length;
+        Provider.of<AppInfo>(context, listen: false).updateOverallTripCounter(overallTripCounter);
+
+        // Share trip keys with provider
+        List<String> tripsKeyList = [];
+        keysTripsId.forEach((key, value) {
+          tripsKeyList.add(key);
+        });
+        Provider.of<AppInfo>(context, listen: false).updateOverallTripKeys(tripsKeyList);
+
+        // Get trip keys data
+        readTripsHistoryInformation(context);
+      }  
+    });
+  }
+
+  static void readTripsHistoryInformation(context) {
+    var tripsAllKeys = Provider.of<AppInfo>(context, listen: false).historyTripsKeyList;
+    for(String eachKey in tripsAllKeys) {
+      FirebaseDatabase.instance.ref().child("All Ride Requests").child(eachKey).once().then((value) {
+        var eachTripHistory = TripHistoryModel.fromSnapshot(value.snapshot);
+        if ((value.snapshot.value as Map)["status"] == "ended") {
+          Provider.of<AppInfo>(context, listen: false).updateOverallTripInformation(eachTripHistory);
+        }
+      });
+    }
   }
 }

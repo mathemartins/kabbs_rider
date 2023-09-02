@@ -25,7 +25,7 @@ class _PlacePredictionTileDesignState extends State<PlacePredictionTileDesign> {
     showDialog(
       context: context,
       builder: (BuildContext context) => ProgressDialog(
-        message: "Setting Up Drof-Off, Please wait...",
+        message: "Setting Destination, Please wait...",
       ),
     );
 
@@ -67,7 +67,7 @@ class _PlacePredictionTileDesignState extends State<PlacePredictionTileDesign> {
         getPlaceDirectionDetails(widget.predictedPlaces.place_id!, context);
       },
       style: ElevatedButton.styleFrom(
-        primary: Colors.white24,
+        primary: Colors.blueGrey,
       ),
       child: Padding(
         padding: const EdgeInsets.all(4.0),
@@ -75,7 +75,7 @@ class _PlacePredictionTileDesignState extends State<PlacePredictionTileDesign> {
           children: [
             const Icon(
               Icons.add_location,
-              color: Colors.grey,
+              color: Colors.white,
             ),
             const SizedBox(width: 14.0,),
             Expanded(
@@ -88,7 +88,7 @@ class _PlacePredictionTileDesignState extends State<PlacePredictionTileDesign> {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 16.0,
-                      color: Colors.white54,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 2.0,),
@@ -97,7 +97,7 @@ class _PlacePredictionTileDesignState extends State<PlacePredictionTileDesign> {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 12.0,
-                      color: Colors.white54,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 8.0,),

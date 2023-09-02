@@ -36,13 +36,13 @@ class _SearchPlacesScreenState extends State<SearchPlacesScreen> {
         children: [
           //search place ui
           Container(
-            height: 160,
+            height: 200,
             decoration: const BoxDecoration(
               color: Colors.black54,
               boxShadow:
               [
                 BoxShadow(
-                  color: Colors.white54,
+                  color: Colors.blueGrey,
                   blurRadius: 8,
                   spreadRadius: 0.5,
                   offset: Offset(
@@ -57,7 +57,7 @@ class _SearchPlacesScreenState extends State<SearchPlacesScreen> {
               child: Column(
                 children: [
 
-                  const SizedBox(height: 25.0),
+                  const SizedBox(height: 40),
 
                   Stack(
                     children: [
@@ -69,16 +69,16 @@ class _SearchPlacesScreenState extends State<SearchPlacesScreen> {
                         },
                         child: const Icon(
                           Icons.arrow_back,
-                          color: Colors.grey,
+                          color: Colors.blueGrey,
                         ),
                       ),
 
                       const Center(
                         child: Text(
-                          "Search & Set DropOff Location",
+                          "Search ",
                           style: TextStyle(
                             fontSize: 18.0,
-                            color: Colors.grey,
+                            color: Colors.blueGrey,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -107,7 +107,7 @@ class _SearchPlacesScreenState extends State<SearchPlacesScreen> {
                               findPlaceAutoCompleteSearch(valueTyped);
                             },
                             decoration: const InputDecoration(
-                              hintText: "search here...",
+                              hintText: "Search Destination Location",
                               fillColor: Colors.white54,
                               filled: true,
                               border: InputBorder.none,
